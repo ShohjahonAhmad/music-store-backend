@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { generateSongs, generateSpanishSongs } from '../services/songGenerator.js';
+import { generateSongs } from '../services/songGenerator.js';
 const router = Router();
 router.get("/", (req, res) => {
     const seed = req.query.seed || '123';
@@ -9,15 +9,7 @@ router.get("/", (req, res) => {
     const seedNumber = parseInt(seed);
     const pageNumber = parseInt(page);
     const likesNumber = parseFloat(likes);
-    let songs;
-    switch (locale) {
-        case "es":
-            songs = generateSpanishSongs(seedNumber, pageNumber, likesNumber);
-            break;
-        default:
-            songs = generateSongs(seedNumber, pageNumber, likesNumber);
-    }
-    // const songs = generateSongs(seedNumber, pageNumber, likesNumber);
+    const songs = generateSongs(seedNumber, pageNumber, likesNumber, locale);
     res.json(songs);
 });
 export default router;

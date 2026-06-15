@@ -1,5 +1,5 @@
 import seedrandom from 'seedrandom';
-import {fakerJA as faker} from "@faker-js/faker";
+import {faker} from "@faker-js/faker";
 import type { Song } from '../types/Song.js';
 import titles from "../data/es-ES/titles.json" with { type: "json" };
 import artists from "../data/es-ES/artists.json" with { type: "json" };
@@ -28,28 +28,11 @@ function generateSong(songSeed: number, index: number): Song {
     }
 }
 
-export function generateSpanishSongs(seed: number, page: number, likesNumber: number): Song[]{
-    const songs: Song[] = [];
-
-    const startIndex = (page - 1) * PAGE_SIZE + 1;
-
-    for(let i = 0; i < PAGE_SIZE; i++) {
-        const index = startIndex + i;
-        const songSeed = (seed * 1000) + index;
-        const song = generateSpanishSong(`${songSeed}- ${index}`, index);
-        song.likes = generateLikes(likesNumber, songSeed + LIKE_SEED_OFFSET);
-
-        songs.push(song);
-    }
-
-    return songs;
-}
-
-export function generateSpanishSong(seed: string, index: number): Song {
+export function generateSpanishSong(seed: number, index: number): Song {
     const titleRng = seedrandom(`${seed}-title`);
-const artistRng = seedrandom(`${seed}-artist`);
-const albumRng = seedrandom(`${seed}-album`);
-const genreRng = seedrandom(`${seed}-genre`);
+    const artistRng = seedrandom(`${seed}-artist`);
+    const albumRng = seedrandom(`${seed}-album`);
+    const genreRng = seedrandom(`${seed}-genre`);
 
     return {
         index,
@@ -61,15 +44,15 @@ const genreRng = seedrandom(`${seed}-genre`);
     }
 }
 
-export function generateSongs(seed: number, page: number, likesNumber: number): Song[] {
+export function generateSongs(seed: number, page: number, likesNumber: number, locale: string): Song[] {
     const songs: Song[] = [];
 
     const startIndex = (page - 1) * PAGE_SIZE + 1;
 
     for (let i = 0; i < PAGE_SIZE; i++) {
         const index = startIndex + i;
-        const songSeed = (seed * 1000) + index;
-        const song = generateSong(songSeed, index);
+        const songSeed = seed * 1000 + index;
+        const song = locale === "es" ? generateSpanishSong(songSeed, index)  : generateSong(songSeed, index);
         song.likes = generateLikes(likesNumber, songSeed + LIKE_SEED_OFFSET);
 
         songs.push(song);
