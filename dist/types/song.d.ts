@@ -1,0 +1,9 @@
+export type Song = {
+    index: number;
+    title: string;
+    artist: string;
+    album: string;
+    genre: string;
+    likes: number;
+};
+//# sourceMappingURL=Song.d.ts.map
