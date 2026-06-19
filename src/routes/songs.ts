@@ -8,7 +8,7 @@ router.get("/", (req, res) => {
     const page = (req.query.page as string) || '1';
     const likes = (req.query.likes as string) || '3.5';
     const locale = (req.query.locale as string) || 'en';
-    const seedNumber = parseInt(seed);
+    const seedNumber = BigInt(seed);
     const pageNumber = parseInt(page);
     const likesNumber = parseFloat(likes);
 

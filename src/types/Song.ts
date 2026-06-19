@@ -5,4 +5,10 @@ export type Song = {
     album: string;
     genre: string;
     likes: number;
+    reviews: Review[];
+}
+
+export type Review = {
+    author: string,
+    content: string,
 }
