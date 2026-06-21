@@ -11,4 +11,12 @@ export type Review = {
     author: string;
     content: string;
 };
+export type Note = {
+    frequency: number;
+    durationMs: number;
+};
+export type Music = {
+    tempo: number;
+    notes: Note[];
+};
 //# sourceMappingURL=Song.d.ts.map
