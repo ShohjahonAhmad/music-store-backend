@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npx tsc",
     "ts-watch": "tsc --watch",
     "start": "node dist/app.js",
     "dev": "nodemon dist/app.js",
