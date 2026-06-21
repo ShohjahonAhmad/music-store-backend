@@ -1,5 +1,9 @@
 import {Router} from 'express';
-import { generateSongs, generateWav } from '../services/songGenerator.js';
+import { generateSongs } from '../services/songGenerator.js';
+import { generateMidi } from '../services/music-generation/generateMidi.js';
+import { midiToWav } from '../services/music-generation/convertMidiToWav.js';
+
+const activeRenders = new Map<string, Promise<Buffer>>();
 
 const router = Router();
 
@@ -17,16 +21,61 @@ router.get("/", (req, res) => {
     res.json(songs);
 })
 
-router.get("/audio", (req, res) => {
-    const seed = (req.query.seed as string) || '123';
-    const index = (req.query.index as string) || '1';
-    const seedNumber = BigInt(seed);
-    const songSeed = `${seedNumber}-${index}`;
-    
-    const wav = generateWav(songSeed);
-    
-    res.setHeader("Content-Type", "audio/wav");
-    res.send(wav);
-})
+router.get("/audio", async (req, res, next) => {
+    const controller = new AbortController();
+  
+    req.on("close", () => {
+      console.log("CLIENT DISCONNECTED");
+      controller.abort();
+    });
+  
+    try {
+      const seed = (req.query.seed as string) || "123";
+      const index = (req.query.index as string) || "1";
+      const songSeed = `${BigInt(seed)}-${index}`;
+      const key = `${seed}-${index}`;
+
+      let render = activeRenders.get(key);
+
+      if (!render) {
+        const midi = generateMidi(songSeed);
+        render = midiToWav(midi, controller.signal);
+      
+        activeRenders.set(key, render);
+      
+        render.finally(() => {
+          activeRenders.delete(key);
+        });
+      }
+
+      const wav = await Promise.race([
+        render,
+        new Promise<never>((_, reject) => {
+          controller.signal.addEventListener("abort", () => {
+            reject(new Error("aborted"));
+          });
+        }),
+      ]);
+  
+      if (controller.signal.aborted) {
+        return;
+      }
+  
+      res.setHeader("Content-Type", "audio/wav");
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=31536000, immutable"
+      );
+      res.setHeader("ETag", songSeed);
+  
+      res.send(wav);
+    } catch (err) {
+      if (controller.signal.aborted) {
+        return;
+      }
+  
+      next(err);
+    }
+  });
 
 export default router;

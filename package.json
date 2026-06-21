@@ -20,7 +20,9 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "seedrandom": "^3.0.5"
+    "midi-writer-js": "^3.2.1",
+    "seedrandom": "^3.0.5",
+    "spessasynth_core": "^4.3.10"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
