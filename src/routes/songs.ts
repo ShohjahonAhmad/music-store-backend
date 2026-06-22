@@ -78,4 +78,13 @@ router.get("/audio", async (req, res, next) => {
     }
   });
 
+router.get("/debug", async (_, res) => {
+    const fs = await import("node:fs/promises");
+
+    res.json({
+        cwd: process.cwd(),
+        files: await fs.readdir(process.cwd()),
+    });
+});
+
 export default router;
