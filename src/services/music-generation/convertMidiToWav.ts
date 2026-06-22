@@ -14,7 +14,7 @@ let soundBankPromise: Promise<any> | null = null;
 
 async function getSoundBank() {
   if (!soundBankPromise) {
-    soundBankPromise = fs.readFile("./soundfonts/CREATIVE_8MBGM.SF2")
+    soundBankPromise = fs.readFile("./src/soundfonts/CREATIVE_8MBGM.SF2")
       .then((buffer) =>
         SoundBankLoader.fromArrayBuffer(
           buffer.buffer.slice(
