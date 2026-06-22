@@ -14,14 +14,10 @@ let soundBankPromise: Promise<any> | null = null;
 
 async function getSoundBank() {
   if (!soundBankPromise) {
-    soundBankPromise = fs.readFile("./src/soundfonts/CREATIVE_8MBGM.SF2")
+    soundBankPromise = fetch("https://www.dropbox.com/scl/fi/8vi8u7ljov7ez42296y7n/CREATIVE_8MBGM.SF2?rlkey=bfehgywp82qbdaeagc463vsam&st=fapp3qs2&dl=1")
+      .then((r) => r.arrayBuffer())
       .then((buffer) =>
-        SoundBankLoader.fromArrayBuffer(
-          buffer.buffer.slice(
-            buffer.byteOffset,
-            buffer.byteOffset + buffer.byteLength
-          )
-        )
+        SoundBankLoader.fromArrayBuffer(buffer)
       );
   }
 
