@@ -1,1 +1,0 @@
-{"version":3,"file":"songGenerator.d.ts","sourceRoot":"","sources":["../../src/services/songGenerator.ts"],"names":[],"mappings":"AAEA,OAAO,KAAK,EAAE,IAAI,EAAU,MAAM,kBAAkB,CAAC;AA2BrD,wBAAgB,mBAAmB,CAAC,IAAI,EAAE,MAAM,EAAE,KAAK,EAAE,MAAM,GAAG,IAAI,CAerE;AAaD,wBAAgB,aAAa,CACzB,IAAI,EAAE,MAAM,EACZ,IAAI,EAAE,MAAM,EACZ,WAAW,EAAE,MAAM,EACnB,MAAM,EAAE,MAAM,GACf,IAAI,EAAE,CAaR"}
