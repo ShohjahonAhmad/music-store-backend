@@ -1,7 +1,3 @@
-// Music theory primitives: scales, diatonic chords, progression templates, rhythm cells.
-// Everything here is pure data or pure functions — no randomness lives in this file.
-// Callers always supply an rng() that returns a float in [0,1), e.g. from seedrandom.
-
 export type ScaleName =
     | "majorIonian"
     | "minorAeolian"
@@ -21,10 +17,6 @@ export const SCALES: Record<ScaleName, number[]> = {
 
 export const SCALE_NAMES = Object.keys(SCALES) as ScaleName[];
 
-/**
- * Build a diatonic triad (root, third, fifth) for a given 0-indexed scale degree,
- * stacking two further scale steps (thirds) within the scale, wrapping octaves as needed.
- */
 export function diatonicTriad(scaleIntervals: number[], degree: number): [number, number, number] {
     const len = scaleIntervals.length;
     const root  = scaleIntervals[degree % len]! + 12 * Math.floor(degree / len);
@@ -38,8 +30,6 @@ export interface ProgressionTemplate {
     degrees: number[];
 }
 
-// Common chord-progression templates expressed as scale-degree indices (0 = tonic),
-// chosen to read as familiar pop/rock/folk progressions rather than random triad soup.
 export const PROGRESSION_TEMPLATES: ProgressionTemplate[] = [
     { name: "I-V-vi-IV",    degrees: [0, 4, 5, 3] },
     { name: "I-IV-V-IV",    degrees: [0, 3, 4, 3] },
@@ -49,11 +39,9 @@ export const PROGRESSION_TEMPLATES: ProgressionTemplate[] = [
     { name: "I-V-IV-V",     degrees: [0, 4, 3, 4] },
     { name: "vi-V-IV-V",    degrees: [5, 4, 3, 4] },
     { name: "I-iii-IV-V",   degrees: [0, 2, 3, 4] },
-    { name: "i-VI-III-VII", degrees: [0, 5, 2, 6] }, // works well over minor-mode scales
+    { name: "i-VI-III-VII", degrees: [0, 5, 2, 6] }, 
 ];
 
-// Rhythmic cell templates for melody generation, in 16th-note units within a 4/4 bar (16 units).
-// Each cell is a list of durations (16th units) summing to 16.
 export const RHYTHM_CELLS: number[][] = [
     [4, 4, 4, 4],
     [2, 2, 4, 4, 4],

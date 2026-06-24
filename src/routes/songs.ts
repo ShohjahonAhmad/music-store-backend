@@ -2,7 +2,7 @@ import {Router} from 'express';
 import { generateSongs } from '../services/songGenerator.js';
 import { generateMidi } from '../services/music-generation/generateMidi.js';
 import { midiToWav } from '../services/music-generation/convertMidiToWav.js';
-
+import {ZipArchive } from "archiver";
 const activeRenders = new Map<string, Promise<Buffer>>();
 
 const router = Router();
@@ -78,6 +78,31 @@ router.get("/audio", async (req, res, next) => {
       next(err);
     }
   });
+
+router.get("/export", async (req, res) => {
+  const seed = (req.query.seed as string) || "123";
+  const page = (req.query.page as string) || "1";
+  const locale = (req.query.locale as string) || "en";
+  const seedNumber = BigInt(seed);
+  const pageNumber = parseInt(page);
+
+  const archive = new ZipArchive({ zlib: { level: 9 } });
+  res.setHeader("Content-Type", "application/zip");
+  res.setHeader("Content-Disposition", `attachment; filename="songs.zip"`);
+  archive.pipe(res);
+
+  const songs = generateSongs(seedNumber, pageNumber, 3.5, locale);
+
+  for(const song of songs) {
+    const midi = generateMidi(`${seedNumber}-${locale}-${song.index}`);
+    const wav = await midiToWav(midi, new AbortController().signal);
+    archive.append(wav, {
+      name: `${song.title}-${song.album}-${song.artist}.wav`,
+    })
+  }
+
+  await archive.finalize();
+})
 
 
 export default router;

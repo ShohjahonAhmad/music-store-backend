@@ -2,8 +2,6 @@ import MidiWriter from "midi-writer-js";
 import { GM, UNITS_PER_BEAT, type Composition, type NoteEventUnits, type ChordEventUnits, type DrumEventUnits } from "./composer.js";
 import { pick } from "./theory.js";
 
-// midi-writer-js default resolution is 128 ticks per quarter note. 1 of our composer "units"
-// is a sixteenth note, so 1 unit = TICKS_PER_BEAT / UNITS_PER_BEAT ticks.
 const TICKS_PER_BEAT = 128;
 const TICKS_PER_UNIT = TICKS_PER_BEAT / UNITS_PER_BEAT;
 
@@ -25,7 +23,6 @@ interface EffectsOptions {
     pan: number;
 }
 
-/** Add reverb (CC91), chorus (CC93), and pan (CC10) sends near the start of a track. */
 function applyEffects(track: InstanceType<typeof MidiWriter.Track>, { reverb, chorus, pan }: EffectsOptions): void {
     track.addEvent(new MidiWriter.ControllerChangeEvent({ controllerNumber: 91, controllerValue: reverb }));
     track.addEvent(new MidiWriter.ControllerChangeEvent({ controllerNumber: 93, controllerValue: chorus }));
@@ -41,11 +38,7 @@ interface PitchedTrackOptions {
     tempo?: number;
 }
 
-/**
- * Build a melodic/lead/arp track from absolute-time note events, anchored at rootMidi
- * with the given General MIDI program. Optionally leads with tempo/time-signature
- * (only the first track in the Writer should set these).
- */
+
 function buildPitchedTrack(
     events: NoteEventUnits[],
     rootMidi: number,
@@ -87,7 +80,6 @@ function buildPitchedTrack(
     return track;
 }
 
-/** Build the sustained chord/pad track from block-chord events (one chord held per bar). */
 function buildChordTrack(
     events: ChordEventUnits[],
     rootMidi: number,
@@ -120,7 +112,6 @@ function buildChordTrack(
     return track;
 }
 
-/** Build the percussion track on GM channel 10 (kick/snare/hihat/crash). */
 function buildDrumTrack(events: DrumEventUnits[]): InstanceType<typeof MidiWriter.Track> {
     const track = new MidiWriter.Track();
     track.addEvent(new MidiWriter.ControllerChangeEvent({ controllerNumber: 91, controllerValue: 20 }));
@@ -140,10 +131,6 @@ function buildDrumTrack(events: DrumEventUnits[]): InstanceType<typeof MidiWrite
     return track;
 }
 
-/**
- * Render a composed song into a MIDI Buffer. `rng` must be the same seeded generator used
- * for composeSong(), continued forward, so instrument/effect choices stay deterministic per seed.
- */
 export function renderToMidiBuffer(composition: Composition, rng: () => number): Buffer {
     const { plan, tracks } = composition;
     const rootMidi = plan.rootMidi;
