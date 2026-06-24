@@ -9,12 +9,11 @@ import {
     type ScaleName,
 } from "./theory.js";
 
-// General MIDI program numbers (0-indexed) used for instrument variety per track role.
 export const GM = {
-    bass:      [33, 34, 35, 36, 38],            // fingered/picked/fretless/slap/synth bass
-    chordsPad: [4, 5, 50, 51, 89, 90, 91],       // electric piano, synth strings/pads
-    melodyLead: [1, 4, 11, 24, 40, 56, 73, 80],  // piano, e.piano, vibes, guitar, violin, trumpet, flute, lead synth
-    arp:       [81, 82, 88, 92, 99],             // saw lead, calliope lead, new age pad, sweep pad, fx
+    bass:      [33, 34, 35, 36, 38],            
+    chordsPad: [4, 5, 50, 51, 89, 90, 91],       
+    melodyLead: [1, 4, 11, 24, 40, 56, 73, 80],  
+    arp:       [81, 82, 88, 92, 99],             
 } as const;
 
 export const UNITS_PER_BEAT = 4;
@@ -72,17 +71,14 @@ export interface Composition {
     };
 }
 
-/**
- * Build the abstract song plan: key, scale, tempo, section list with bar counts,
- * and a chord progression (diatonic triads) per section. Targets ~30-45s total.
- */
+
 export function planSong(rng: () => number): SongPlan {
-    const rootMidi = 48 + Math.floor(rng() * 12); // C3..B3 anchor; tracks apply their own octave shift
+    const rootMidi = 48 + Math.floor(rng() * 12);
     const scaleName = pick(rng, SCALE_NAMES);
     const scale = SCALES[scaleName];
     const isMinorish = scaleName === "minorAeolian" || scaleName === "harmonicMinor" || scaleName === "phrygian";
 
-    const tempo = 78 + Math.floor(rng() * 70); // 78-147 BPM: meaningful spread across songs
+    const tempo = 78 + Math.floor(rng() * 70); 
     const secPerBar = (60 / tempo) * BEATS_PER_BAR;
 
     type SectionType = SongSection["type"];
@@ -93,7 +89,6 @@ export function planSong(rng: () => number): SongPlan {
     let totalBars = plan.reduce((s, p) => s + p.bars, 0);
     let totalSec = totalBars * secPerBar;
 
-    // Adjust to land between 30 and 45s by trimming/extending chorus repeats first.
     while (totalSec < 30) {
         plan.push({ type: "chorus", bars: sectionBars.chorus });
         totalBars = plan.reduce((s, p) => s + p.bars, 0);
@@ -107,7 +102,6 @@ export function planSong(rng: () => number): SongPlan {
         totalSec = totalBars * secPerBar;
     }
 
-    // One progression template for verses, a different one for chorus, for contrast.
     const verseProg = pick(rng, PROGRESSION_TEMPLATES);
     let chorusProg = pick(rng, PROGRESSION_TEMPLATES);
     if (chorusProg.name === verseProg.name && PROGRESSION_TEMPLATES.length > 1) {
@@ -136,10 +130,6 @@ export function planSong(rng: () => number): SongPlan {
     return { rootMidi, scaleName, scale, isMinorish, tempo, secPerBar, sections, totalBars, estSeconds: totalSec };
 }
 
-/**
- * Generate a melodic line for one section, biased toward chord tones on strong beats
- * and stepwise scale motion elsewhere, with occasional rests for phrasing.
- */
 function generateMelodyForSection(rng: () => number, plan: SongPlan, section: SongSection, energy: number): NoteEventUnits[] {
     const events: NoteEventUnits[] = [];
     const scaleLen = plan.scale.length;
@@ -174,7 +164,6 @@ function generateMelodyForSection(rng: () => number, plan: SongPlan, section: So
     return events;
 }
 
-/** Generate a steady bass line: root/fifth of the chord per bar, with rhythmic variety for groove. */
 function generateBassForSection(rng: () => number, section: SongSection): NoteEventUnits[] {
     const events: NoteEventUnits[] = [];
     for (let bar = 0; bar < section.bars; bar++) {
@@ -182,7 +171,7 @@ function generateBassForSection(rng: () => number, section: SongSection): NoteEv
         const root = chord[0] - 12;
         const fifth = chord[2] - 12;
 
-        const pattern = pickWeightedIndex(rng, [5, 3, 2]); // 0: simple, 1: root+fifth, 2: syncopated
+        const pattern = pickWeightedIndex(rng, [5, 3, 2]); 
         const base = bar * UNITS_PER_BAR;
         if (pattern === 0) {
             events.push({ startUnit: base, durationUnits: UNITS_PER_BAR, semitoneOffset: root, isRest: false });
@@ -198,7 +187,6 @@ function generateBassForSection(rng: () => number, section: SongSection): NoteEv
     return events;
 }
 
-/** Generate sustained chord-pad events: one block chord held for the whole bar. */
 function generateChordsForSection(section: SongSection): ChordEventUnits[] {
     const events: ChordEventUnits[] = [];
     for (let bar = 0; bar < section.bars; bar++) {
@@ -207,14 +195,10 @@ function generateChordsForSection(section: SongSection): ChordEventUnits[] {
     return events;
 }
 
-/**
- * Generate an arpeggio line cycling through the bar's chord tones (plus the octave above).
- * Only used in higher-energy sections (chorus/bridge) for contrast.
- */
 function generateArpForSection(rng: () => number, section: SongSection, active: boolean): NoteEventUnits[] {
     const events: NoteEventUnits[] = [];
     if (!active) return events;
-    const subdivision = pick(rng, [2, 4]); // 8th or quarter-ish subdivision in 16th units
+    const subdivision = pick(rng, [2, 4]);
     for (let bar = 0; bar < section.bars; bar++) {
         const chord = section.chords[bar]!;
         const extended = [chord[0], chord[1], chord[2], chord[0] + 12];
@@ -232,10 +216,6 @@ function generateArpForSection(rng: () => number, section: SongSection, active: 
     return events;
 }
 
-/**
- * Generate a kick/snare/hihat drum pattern using GM percussion note numbers
- * (36 kick, 38 snare, 42 closed hihat, 46 open hihat, 49 crash).
- */
 function generateDrumsForSection(rng: () => number, section: SongSection, isFill: boolean): DrumEventUnits[] {
     const KICK = 36, SNARE = 38, HIHAT = 42, OPENHAT = 46, CRASH = 49;
     const events: DrumEventUnits[] = [];
@@ -260,10 +240,7 @@ function generateDrumsForSection(rng: () => number, section: SongSection, isFill
     return events;
 }
 
-/**
- * Build the full multi-track composition: plan + per-track absolute-time note events
- * (melody, bass, chords/pad, arp, drums), ready for MIDI rendering.
- */
+
 export function composeSong(rng: () => number): Composition {
     const plan = planSong(rng);
 

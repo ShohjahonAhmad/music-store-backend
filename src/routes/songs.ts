@@ -32,8 +32,9 @@ router.get("/audio", async (req, res, next) => {
     try {
       const seed = (req.query.seed as string) || "123";
       const index = (req.query.index as string) || "1";
-      const songSeed = `${BigInt(seed)}-${index}`;
-      const key = `${seed}-${index}`;
+      const locale = (req.query.locale as string) || "en";
+      const songSeed = `${BigInt(seed)}-${locale}-${index}`;
+      const key = `${seed}-${index}-${locale}`;
 
       let render = activeRenders.get(key);
 
@@ -78,13 +79,5 @@ router.get("/audio", async (req, res, next) => {
     }
   });
 
-router.get("/debug", async (_, res) => {
-    const fs = await import("node:fs/promises");
-
-    res.json({
-        cwd: process.cwd(),
-        files: await fs.readdir(process.cwd()),
-    });
-});
 
 export default router;
